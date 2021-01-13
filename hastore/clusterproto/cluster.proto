@@ -1,0 +1,41 @@
+syntax="proto3";
+package clusterproto;
+option go_package=".;clusterproto";
+
+import "google/protobuf/duration.proto";
+
+message GetLeaderReq {
+  string node_id = 1;
+  uint32 raft_port = 2;
+}
+
+message GetLeaderRes {
+  string leader_addr = 1;
+}
+
+// ApplyTxnReq describes a transaction to be applied by the raft leader.
+message ApplyTxnReq {
+  bytes txn_data = 2;
+  google.protobuf.Duration timeout = 3;
+}
+
+// Edge describes an edge in the linkgraph.
+message ApplyTxnRes {
+  int32 assertions = 1;
+  int32 insertions = 2;
+  int32 updates = 3;
+  int32 deletions = 4;
+  google.protobuf.Duration wait_time = 5;
+  google.protobuf.Duration assert_time = 6;
+  google.protobuf.Duration apply_time = 7;
+}
+
+// ClusterInfo describes a service that provides information about the nodes
+// in a cluster.
+service Cluster {
+  // GetRaftLeader returns the raft address of the cluster leader.
+  rpc GetRaftLeader(GetLeaderReq) returns (GetLeaderRes);
+
+  // Apply a transaction if the node is the raft leader.
+  rpc Apply(ApplyTxnReq) returns (ApplyTxnRes);
+}
